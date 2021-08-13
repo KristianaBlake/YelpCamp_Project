@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
+const Campground = require('./models/campground');
 
 // this is logic here saying use our local development database OR if this is in production 
     // use the production database
@@ -27,6 +28,13 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.get('/', (req, res) => {
     res.render('home');
+    res.send(camp);
+})
+
+app.get('/makecampground', async (req, res) => {
+    const camp = new Campground({ title: 'My Backyard', description: 'cheap camping!' });
+    await camp.save();
+    res.send(camp);
 })
 
 app.listen(3000, () => {
