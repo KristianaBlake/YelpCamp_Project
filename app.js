@@ -28,15 +28,13 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.get('/', (req, res) => {
     res.render('home');
-    res.send(camp);
-})
+});
 
-// this route is creating a campground
-app.get('/makecampground', async (req, res) => {
-    const camp = new Campground({ title: 'My Backyard', description: 'cheap camping!' });
-    await camp.save();
-    res.send(camp);
-})
+app.get('/campgrounds', async (req, res) => {
+    const campgrounds = await Campground.find({});
+});
+
+
 
 app.listen(3000, () => {
     console.log('Serving on port 3000');
