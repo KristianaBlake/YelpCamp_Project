@@ -26,6 +26,9 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// this parses the body of the request
+app.use(express.urlencoded({ extended: true }))
+
 app.get('/', (req, res) => {
     res.render('home');
 });
@@ -43,6 +46,10 @@ app.get('/campgrounds/:id', async(req, res) => {
     const campground = await Campground.findById(req.params.id);
     res.render('campgrounds/show', { campground })
 });
+
+app.post('/campgrounds', async (req, res) => {
+    res.send(req.body)
+})
 
 app.listen(3000, () => {
     console.log('Serving on port 3000');
