@@ -31,6 +31,7 @@ app.get('/', (req, res) => {
     res.send(camp);
 })
 
+// this route is creating a campground
 app.get('/makecampground', async (req, res) => {
     const camp = new Campground({ title: 'My Backyard', description: 'cheap camping!' });
     await camp.save();
