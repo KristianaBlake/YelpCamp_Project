@@ -64,7 +64,14 @@ app.get('/campgrounds/:id/edit', async (req, res) => {
 })
 
 app.put('/campgrounds/:id', async (req, res) => {
-    res.send("IT WORKED")
+    const { id } = req.params;
+    // the method findByIdAndUpdate is taking the id as a parameter
+    // and everything that is in the body of the request object for the model campround 
+    // (req.body.campground) and  will fill new information (using the spread operator {...})
+    // for that specific id 
+    const campground = await Campground.findByIdAndUpdate(id, {...req.body.campground });
+    // redirect to the show page of the campground we just updated
+    res.redirect(`/campgrounds/${campground._id}`)
 })
 
 app.listen(3000, () => {
