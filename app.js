@@ -23,6 +23,8 @@ db.once("open", () => {
 });
 
 const app = express();
+const morgan = require('morgan');
+
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -30,6 +32,7 @@ app.set('views', path.join(__dirname, 'views'));
 // this parses the body of the request
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
+app.use(morgan('dev'));
 
 app.get('/', (req, res) => {
     res.render('home');
