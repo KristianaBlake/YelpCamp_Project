@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
+const catchAsyncError = require('./utils/catchAsync');
 const methodOverride = require('method-override');
 const Campground = require('./models/campground');
 
@@ -25,6 +26,8 @@ db.once("open", () => {
 
 const app = express();
 const morgan = require('morgan');
+const { appendFile } = require('fs');
+const catchAsync = require('./utils/catchAsync');
 
 app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
@@ -39,35 +42,35 @@ app.get('/', (req, res) => {
     res.render('home');
 });
 
-app.get('/campgrounds', async (req, res) => {
+app.get('/campgrounds', catchAsyncError(async (req, res) => {
     const campgrounds = await Campground.find({});
     res.render('campgrounds/index', { campgrounds });
-});
+}));
 
 // create page 
 app.get('/campgrounds/new', (req, res) => {
     res.render('campgrounds/new')
 })
 
-app.post('/campgrounds', async (req, res) => {
+app.post('/campgrounds', catchAsyncError(async (req, res, next) => {
     const campground = new Campground(req.body.campground);
     await campground.save();
     res.redirect(`/campgrounds/${campground._id}`);
-})
+}));
 
 // show page 
-app.get('/campgrounds/:id', async(req, res) => {
+app.get('/campgrounds/:id', catchAsyncError(async(req, res, next) => {
     const campground = await Campground.findById(req.params.id);
     res.render('campgrounds/show', { campground })
-});
+}));
 
 // edit page 
-app.get('/campgrounds/:id/edit', async (req, res) => {
+app.get('/campgrounds/:id/edit', catchAsyncError(async (req, res, next) => {
     const campground = await Campground.findById(req.params.id);
     res.render('campgrounds/edit', { campground })
-})
+}));
 
-app.put('/campgrounds/:id', async (req, res) => {
+app.put('/campgrounds/:id', catchAsyncError(async (req, res, next) => {
     const { id } = req.params;
     // the method findByIdAndUpdate is taking the id as a parameter
     // and everything that is in the body of the request object for the model campround 
@@ -76,14 +79,19 @@ app.put('/campgrounds/:id', async (req, res) => {
     const campground = await Campground.findByIdAndUpdate(id, {...req.body.campground });
     // redirect to the show page of the campground we just updated
     res.redirect(`/campgrounds/${campground._id}`)
-})
+}));
 
-app.delete('/campgrounds/:id', async (req, res) => {
+app.delete('/campgrounds/:id', catchAsyncError(async (req, res, next) => {
     const { id } = req.params; 
     await Campground.findByIdAndDelete(id); 
     res.redirect('/campgrounds');
 
-})
+}));
+
+// custom error handling 
+app.use((err, req, res, next) => {
+    res.send('Oh boy, something went wrong!')
+});
 
 app.listen(3000, () => {
     console.log('Serving on port 3000');
