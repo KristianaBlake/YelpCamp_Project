@@ -3,6 +3,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
 const catchAsyncError = require('./utils/catchAsync');
+const ExpressError = require('./utils/ExpressError');
 const methodOverride = require('method-override');
 const Campground = require('./models/campground');
 
@@ -88,8 +89,17 @@ app.delete('/campgrounds/:id', catchAsyncError(async (req, res, next) => {
 
 }));
 
+// this will only run if nothing has matched first and we didn't get a response from any of them
+// app.all() is for every single request
+// * - means for every path
+app.all('*', (req, res, next) => {
+    next(new ExpressError('Page Not Found', 404));
+});
+
 // custom error handling 
 app.use((err, req, res, next) => {
+    const {statusCode = 500, message = 'Something went wrong'} = err;
+    res.status(statusCode).send(message)
     res.send('Oh boy, something went wrong!')
 });
 
