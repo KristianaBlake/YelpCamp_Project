@@ -54,6 +54,11 @@ app.get('/campgrounds/new', (req, res) => {
 })
 
 app.post('/campgrounds', catchAsyncError(async (req, res, next) => {
+    // if NOT req.body.campground (if it doesn't exist), we'll just throw a new express error
+    // We "throw" the express error because we are inside the async function and the catchAsync
+    // is going to catch that error and hand it off to "next" which takes the error down to the 
+    // app.use() function near the bottom of the page (where the custom error handling is)
+    if(!req.body.campgound) throw new ExpressError('Invalid Campground Data', 400);
     const campground = new Campground(req.body.campground);
     await campground.save();
     res.redirect(`/campgrounds/${campground._id}`);
@@ -96,7 +101,7 @@ app.all('*', (req, res, next) => {
     next(new ExpressError('Page Not Found', 404));
 });
 
-// custom error handling 
+// custom error handling/ our custom error handler 
 app.use((err, req, res, next) => {
     const {statusCode = 500, message = 'Something went wrong'} = err;
     res.status(statusCode).send(message)
