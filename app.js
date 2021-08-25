@@ -54,6 +54,8 @@ app.get('/campgrounds/new', (req, res) => {
     res.render('campgrounds/new')
 })
 
+app.post('/campgrounds', validateCampground, catchAsync(async (req, res, next) => { 
+
     // this is basic rudimentary logic: 
         // if NOT req.body.campground (if it doesn't exist), we'll just throw a new express error
         // We "throw" the express error because we are inside the async function and the catchAsync
@@ -62,7 +64,7 @@ app.get('/campgrounds/new', (req, res) => {
      // ->  // if(!req.body.campgound) throw new ExpressError('Invalid Campground Data', 400);
 
     // this is not a mongoose schema
-    // this is going to validate our (req.body) data before we attempt to save it with mongoose (before we involve mongoose at all)
+    // this is going to validate our (req.body) data before we attempt to save it with mongoose (before we involve mongoose)
     const campgroundSchema = Joi.object({
         campground: Joi.object({}).required()
 
