@@ -3,6 +3,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
 const Joi = require('joi');
+const { campgroundSchema } = require('./schemas.js');
 const catchAsyncError = require('./utils/catchAsync');
 const ExpressError = require('./utils/ExpressError');
 const methodOverride = require('method-override');
@@ -40,6 +41,23 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(morgan('dev'));
 
+const validateCampground = (req, res, next) => {
+    // once we have the schema defined, all we do is pass our data through to our schema 
+    // we are destructuring to get the error 
+    const { error } = campgroundSchema.validate(req.body);
+    // this check to see if there is an error
+    if(error){
+        const msg = error.details.map(el => el.message).join(',')
+        // if there is an error it will be caught and thrown to our custom 
+        // error handler further down the page (app.use())
+        
+        // we will also throw the error with the message variable we created above 
+        throw new ExpressError(msg, 400)
+    } else {
+        next();
+    }
+}
+
 app.get('/', (req, res) => {
     res.render('home');
 });
@@ -66,30 +84,6 @@ app.post('/campgrounds', validateCampground, catchAsync(async (req, res, next) =
     // this is not a mongoose schema
     // this is going to validate our (req.body) data before we attempt to save it with mongoose (before we involve mongoose)
 
-    
-    const campgroundSchema = Joi.object({
-        // "campground" is a *key*
-        // "object" is *type* and reqired is a necessary param
-        campground: Joi.object({
-            title: Joi.string().required(),
-            price: Joi.number().required().min(0),
-            image: Joi.string().required(),
-            location: Joi.string().required(),
-            description: Joi.string().required()
-        }).required()
-    })
-    // once we have the schema defined, all we do is pass our data through to our schema 
-    // we are destructuring to get the error 
-    const { error } = campgroundSchema.validate(req.body);
-    // this check to see if there is an error
-    if(error){
-        const msg = error.details.map(el => el.message).join(',')
-        // if there is an error it will be caught and thrown to our custom 
-        // error handler further down the page (app.use())
-        
-        // we will also throw the error with the message variable we created above 
-        throw new ExpressError(msg, 400)
-    }
     const campground = new Campground(req.body.campground);
     await campground.save();
     res.redirect(`/campgrounds/${campground._id}`);
@@ -107,7 +101,8 @@ app.get('/campgrounds/:id/edit', catchAsyncError(async (req, res, next) => {
     res.render('campgrounds/edit', { campground })
 }));
 
-app.put('/campgrounds/:id', catchAsyncError(async (req, res, next) => {
+// updating a campground
+app.put('/campgrounds/:id', validateCampground, catchAsyncError(async (req, res, next) => {
     const { id } = req.params;
     // the method findByIdAndUpdate is taking the id as a parameter
     // and everything that is in the body of the request object for the model campround 
