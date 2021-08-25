@@ -54,8 +54,8 @@ app.get('/campgrounds/new', (req, res) => {
     res.render('campgrounds/new')
 })
 
+// creating campground
 app.post('/campgrounds', validateCampground, catchAsync(async (req, res, next) => { 
-
     // this is basic rudimentary logic: 
         // if NOT req.body.campground (if it doesn't exist), we'll just throw a new express error
         // We "throw" the express error because we are inside the async function and the catchAsync
@@ -65,10 +65,31 @@ app.post('/campgrounds', validateCampground, catchAsync(async (req, res, next) =
 
     // this is not a mongoose schema
     // this is going to validate our (req.body) data before we attempt to save it with mongoose (before we involve mongoose)
-    const campgroundSchema = Joi.object({
-        campground: Joi.object({}).required()
 
+    
+    const campgroundSchema = Joi.object({
+        // "campground" is a *key*
+        // "object" is *type* and reqired is a necessary param
+        campground: Joi.object({
+            title: Joi.string().required(),
+            price: Joi.number().required().min(0),
+            image: Joi.string().required(),
+            location: Joi.string().required(),
+            description: Joi.string().required()
+        }).required()
     })
+    // once we have the schema defined, all we do is pass our data through to our schema 
+    // we are destructuring to get the error 
+    const { error } = campgroundSchema.validate(req.body);
+    // this check to see if there is an error
+    if(error){
+        const msg = error.details.map(el => el.message).join(',')
+        // if there is an error it will be caught and thrown to our custom 
+        // error handler further down the page (app.use())
+        
+        // we will also throw the error with the message variable we created above 
+        throw new ExpressError(msg, 400)
+    }
     const campground = new Campground(req.body.campground);
     await campground.save();
     res.redirect(`/campgrounds/${campground._id}`);
