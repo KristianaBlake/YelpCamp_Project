@@ -7,6 +7,7 @@ const catchAsyncError = require('./utils/catchAsync');
 const ExpressError = require('./utils/ExpressError');
 const methodOverride = require('method-override');
 const Campground = require('./models/campground');
+const Review = require('./models/review');
 
 // this is logic here saying use our local development database OR if this is in production 
     // use the production database
@@ -121,7 +122,12 @@ app.delete('/campgrounds/:id', catchAsyncError(async (req, res, next) => {
 
 // post route to create review for specific campground 
 app.post('/campgrounds/:id/reviews', catchAsync(async(req, res) => {
-    res.send('YOU MADE IT!!');
+    const campground = await Campground.findById(req.params.id);
+    const review = new Review(req.body.review);
+    campground.reviews.push(review);
+    await review.save();
+    await campground.save();
+    res.redirect(`/campgrounds/${campground._id}`);
 }))
 
 // this will only run if nothing has matched first and we didn't get a response from any of them
