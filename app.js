@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
-const { campgroundSchema } = require('./schemas.js');
+const { campgroundSchema, reviewSchema } = require('./schemas.js');
 const catchAsyncError = require('./utils/catchAsync');
 const ExpressError = require('./utils/ExpressError');
 const methodOverride = require('method-override');
@@ -52,6 +52,17 @@ const validateCampground = (req, res, next) => {
         // error handler further down the page (app.use())
         
         // we will also throw the error with the message variable we created above 
+        throw new ExpressError(msg, 400)
+    } else {
+        next();
+    }
+}
+
+const validateReview = (req, res, next) => {
+    // check for an error from the object we get back from the reviewSchema
+    const { error } = reviewSchema.validate(req.body);
+    if(error){
+        const msg = error.details.map(el => el.message).join(',')
         throw new ExpressError(msg, 400)
     } else {
         next();
@@ -121,7 +132,7 @@ app.delete('/campgrounds/:id', catchAsyncError(async (req, res, next) => {
 }));
 
 // post route to create review for specific campground 
-app.post('/campgrounds/:id/reviews', catchAsync(async(req, res) => {
+app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async(req, res) => {
     const campground = await Campground.findById(req.params.id);
     const review = new Review(req.body.review);
     campground.reviews.push(review);
