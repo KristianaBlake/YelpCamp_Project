@@ -119,6 +119,11 @@ app.delete('/campgrounds/:id', catchAsyncError(async (req, res, next) => {
 
 }));
 
+// post route to create review for specific campground 
+app.post('/campgrounds/:id/reviews', catchAsync(async(req, res) => {
+    res.send('YOU MADE IT!!');
+}))
+
 // this will only run if nothing has matched first and we didn't get a response from any of them
 // app.all() is for every single request
 // * - means for every path
