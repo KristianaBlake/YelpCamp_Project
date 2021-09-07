@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Review = require('./review');
 const Schema = mongoose.Schema;
 
 // making our Schema 
@@ -16,5 +17,19 @@ const CampgroundSchema = new Schema({
         }
     ]
 });
+
+CampgroundSchema.post('findOneAndDelete', async function(doc){
+    // if a document to delete was found
+    // we are going to call Review.remove()
+    if(doc){
+        // we are passing in a query to .remove()
+        //  - the id for each review is somehwere $in our document.reviews (doc.reviews)
+        await Review.remove({
+            _id: {
+                $in: doc.reviews
+            }
+        })
+    }
+})
 
 module.exports = mongoose.model('Campground', CampgroundSchema);
