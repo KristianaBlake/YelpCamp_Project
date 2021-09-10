@@ -9,6 +9,8 @@ const methodOverride = require('method-override');
 const Campground = require('./models/campground');
 const Review = require('./models/review');
 
+const campgrounds = require('./routes/campgrounds');
+
 // this is logic here saying use our local development database OR if this is in production 
     // use the production database
 
@@ -41,22 +43,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(morgan('dev'));
 
-const validateCampground = (req, res, next) => {
-    // once we have the schema defined, all we do is pass our data through to our schema 
-    // we are destructuring to get the error 
-    const { error } = campgroundSchema.validate(req.body);
-    // this check to see if there is an error
-    if(error){
-        const msg = error.details.map(el => el.message).join(',')
-        // if there is an error it will be caught and thrown to our custom 
-        // error handler further down the page (app.use())
-        
-        // we will also throw the error with the message variable we created above 
-        throw new ExpressError(msg, 400)
-    } else {
-        next();
-    }
-}
 
 const validateReview = (req, res, next) => {
     // check for an error from the object we get back from the reviewSchema
@@ -69,77 +55,11 @@ const validateReview = (req, res, next) => {
     }
 }
 
+app.use('/campgrounds', campgrounds)
+
 app.get('/', (req, res) => {
     res.render('home');
 });
-
-app.get('/campgrounds', catchAsyncError(async (req, res) => {
-    const campgrounds = await Campground.find({});
-    res.render('campgrounds/index', { campgrounds });
-}));
-
-// create page 
-app.get('/campgrounds/new', (req, res) => {
-    res.render('campgrounds/new')
-})
-
-// creating campground
-app.post('/campgrounds', validateCampground, catchAsync(async (req, res, next) => { 
-    // this is basic rudimentary logic: 
-        // if NOT req.body.campground (if it doesn't exist), we'll just throw a new express error
-        // We "throw" the express error because we are inside the async function and the catchAsync
-        // is going to catch that error and hand it off to "next" which takes the error down to the 
-        // app.use() function near the bottom of the page (where the custom error handling is)
-     // ->  // if(!req.body.campgound) throw new ExpressError('Invalid Campground Data', 400);
-
-    // this is not a mongoose schema
-    // this is going to validate our (req.body) data before we attempt to save it with mongoose (before we involve mongoose)
-
-    const campground = new Campground(req.body.campground);
-    await campground.save();
-    res.redirect(`/campgrounds/${campground._id}`);
-}));
-
-app.delete('/campgrounds/:id/reviews/:reviewId', catchAsync(async (req, res) => {
-    // using mongo operator called "pull" to grab that *one* campground object id 
-    // from an array of object ids 
-    const { id, reviewId } = req.params;
-    // the $pull mongo operator will pull out any matching reviewIds from the array of reviews ids 
-    await Campground.findByIdAndUpdate(id, {$pull: { reviews: reviewId } });
-    await Review.findByIdAndDelete(reviewId);
-    res.redirect(`/campgrounds/${id}`);
-}));
-
-// show page 
-app.get('/campgrounds/:id', catchAsyncError(async(req, res, next) => {
-    const campground = await Campground.findById(req.params.id).populate('reviews');
-    res.render('campgrounds/show', { campground })
-}));
-
-// edit page 
-app.get('/campgrounds/:id/edit', catchAsyncError(async (req, res, next) => {
-    const campground = await Campground.findById(req.params.id);
-    res.render('campgrounds/edit', { campground })
-}));
-
-// updating a campground
-app.put('/campgrounds/:id', validateCampground, catchAsyncError(async (req, res, next) => {
-    const { id } = req.params;
-    // the method findByIdAndUpdate is taking the id as a parameter
-    // and everything that is in the body of the request object for the model campround 
-    // (req.body.campground) and  will fill new information (using the spread operator {...})
-    // for that specific id 
-    const campground = await Campground.findByIdAndUpdate(id, {...req.body.campground });
-    // redirect to the show page of the campground we just updated
-    res.redirect(`/campgrounds/${campground._id}`)
-}));
-
-app.delete('/campgrounds/:id', catchAsyncError(async (req, res, next) => {
-    const { id } = req.params; 
-    await Campground.findByIdAndDelete(id); 
-    res.redirect('/campgrounds');
-
-}));
 
 // post route to create review for specific campground 
 app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async(req, res) => {
@@ -150,6 +70,17 @@ app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async(req, res) 
     await campground.save();
     res.redirect(`/campgrounds/${campground._id}`);
 }))
+
+// deleting a campground with associated reviews 
+app.delete('/campgrounds/:id/reviews/:reviewId', catchAsync(async (req, res) => {
+    // using mongo operator called "pull" to grab that *one* campground object id 
+    // from an array of object ids 
+    const { id, reviewId } = req.params;
+    // the $pull mongo operator will pull out any matching reviewIds from the array of reviews ids 
+    await Campground.findByIdAndUpdate(id, {$pull: { reviews: reviewId } });
+    await Review.findByIdAndDelete(reviewId);
+    res.redirect(`/campgrounds/${id}`);
+}));
 
 // this will only run if nothing has matched first and we didn't get a response from any of them
 // app.all() is for every single request
