@@ -18,11 +18,10 @@ const validateReview = (req, res, next) => {
     } else {
         next();
     }
-}
-
+};
 
 // post route to create review for specific campground 
-router.post('/', validateReview, catchAsync(async(req, res) => {
+router.post('/', validateReview, catchAsyncError(async(req, res) => {
     const campground = await Campground.findById(req.params.id);
     const review = new Review(req.body.review);
     campground.reviews.push(review);
@@ -32,7 +31,7 @@ router.post('/', validateReview, catchAsync(async(req, res) => {
 }))
 
 // deleting a campground with associated reviews 
-router.delete('/:reviewId', catchAsync(async (req, res) => {
+router.delete('/:reviewId', catchAsyncError(async (req, res) => {
     // using mongo operator called "pull" to grab that *one* campground object id 
     // from an array of object ids 
     const { id, reviewId } = req.params;
