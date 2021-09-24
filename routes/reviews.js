@@ -1,4 +1,9 @@
 const express = require('express');
+// Express router likes to keep params separate. By default, 
+// we won't have access to that id in our reviews routes because
+// routers get separate params
+// But we can specify an option {mergeParams: true }. 
+// Now all the params are going to be merged. 
 const router = express.Router({ mergeParams: true});
 
 const Campground = require('../models/campground');
