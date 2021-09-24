@@ -16,10 +16,6 @@ const reviews = require('./routes/reviews');
 
 // then we pass in our options so our database won't yell at us 
 mongoose.connect('mongodb://localhost:27017/yelp-camp', {
-    useNewUrlParser: true, 
-    useCreateIndex: true, 
-    useUnifiedTopology: true,
-    useFindAndModify: false
 });
 
 const db = mongoose.connection;
@@ -50,7 +46,7 @@ const sessionConfig = {
     cookie: {
         httpOnly: true, 
         expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
-        maxAge: 1000 * 60 * 60 * 24 * 7
+        maxAge: 1000 * 60 * 60 * 24 * 7,
     }
 }
 app.use(session(sessionConfig))
