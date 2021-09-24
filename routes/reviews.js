@@ -1,8 +1,28 @@
 const express = require('express');
 const router = express.Router();
 
+const Campground = require('../models/campground');
+const Review = require('../models/review');
+
+const { reviewSchema } = require('../schemas.js');
+
+const ExpressError = require('../utils/ExpressError');
+const catchAsyncError = require('../utils/catchAsync');
+
+const validateReview = (req, res, next) => {
+    // check for an error from the object we get back from the reviewSchema
+    const { error } = reviewSchema.validate(req.body);
+    if(error){
+        const msg = error.details.map(el => el.message).join(',')
+        throw new ExpressError(msg, 400)
+    } else {
+        next();
+    }
+}
+
+
 // post route to create review for specific campground 
-router.post('/campgrounds/:id/reviews', validateReview, catchAsync(async(req, res) => {
+router.post('/', validateReview, catchAsync(async(req, res) => {
     const campground = await Campground.findById(req.params.id);
     const review = new Review(req.body.review);
     campground.reviews.push(review);
@@ -12,7 +32,7 @@ router.post('/campgrounds/:id/reviews', validateReview, catchAsync(async(req, re
 }))
 
 // deleting a campground with associated reviews 
-router.delete('/campgrounds/:id/reviews/:reviewId', catchAsync(async (req, res) => {
+router.delete('/:reviewId', catchAsync(async (req, res) => {
     // using mongo operator called "pull" to grab that *one* campground object id 
     // from an array of object ids 
     const { id, reviewId } = req.params;

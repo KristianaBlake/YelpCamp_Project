@@ -2,14 +2,11 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
-const { campgroundSchema, reviewSchema } = require('./schemas.js');
-const catchAsyncError = require('./utils/catchAsync');
 const ExpressError = require('./utils/ExpressError');
 const methodOverride = require('method-override');
-const Campground = require('./models/campground');
-const Review = require('./models/review');
 
 const campgrounds = require('./routes/campgrounds');
+const reviews = require('./routes/reviews');
 
 // this is logic here saying use our local development database OR if this is in production 
     // use the production database
@@ -44,43 +41,12 @@ app.use(methodOverride('_method'));
 app.use(morgan('dev'));
 
 
-const validateReview = (req, res, next) => {
-    // check for an error from the object we get back from the reviewSchema
-    const { error } = reviewSchema.validate(req.body);
-    if(error){
-        const msg = error.details.map(el => el.message).join(',')
-        throw new ExpressError(msg, 400)
-    } else {
-        next();
-    }
-}
-
 app.use('/campgrounds', campgrounds)
+app.use('/campgrounds/:id/reviews', reviews)
 
 app.get('/', (req, res) => {
     res.render('home');
 });
-
-// post route to create review for specific campground 
-app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async(req, res) => {
-    const campground = await Campground.findById(req.params.id);
-    const review = new Review(req.body.review);
-    campground.reviews.push(review);
-    await review.save();
-    await campground.save();
-    res.redirect(`/campgrounds/${campground._id}`);
-}))
-
-// deleting a campground with associated reviews 
-app.delete('/campgrounds/:id/reviews/:reviewId', catchAsync(async (req, res) => {
-    // using mongo operator called "pull" to grab that *one* campground object id 
-    // from an array of object ids 
-    const { id, reviewId } = req.params;
-    // the $pull mongo operator will pull out any matching reviewIds from the array of reviews ids 
-    await Campground.findByIdAndUpdate(id, {$pull: { reviews: reviewId } });
-    await Review.findByIdAndDelete(reviewId);
-    res.redirect(`/campgrounds/${id}`);
-}));
 
 // this will only run if nothing has matched first and we didn't get a response from any of them
 // app.all() is for every single request
