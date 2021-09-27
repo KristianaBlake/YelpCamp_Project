@@ -44,6 +44,7 @@ router.delete('/:reviewId', catchAsyncError(async (req, res) => {
     // the $pull mongo operator will pull out any matching reviewIds from the array of reviews ids 
     await Campground.findByIdAndUpdate(id, {$pull: { reviews: reviewId } });
     await Review.findByIdAndDelete(reviewId);
+    req.flash('success', 'Sucessfully deleted review!');
     res.redirect(`/campgrounds/${id}`);
 }));
 
