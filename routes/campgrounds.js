@@ -54,6 +54,13 @@ router.post('/', validateCampground, catchAsyncError (async (req, res, next) => 
 // show page 
 router.get('/:id', catchAsyncError(async(req, res, next) => {
     const campground = await Campground.findById(req.params.id).populate('reviews');
+    // if you didn't find a campground, or mongoose didn't find a campground with that id, 
+    // thenn flash error
+    // and redirect to the campgrounds homepage 
+    if (!campground) {
+        req.flash('error', 'Cannot find that campground!');
+        return res.redirect('/campgrounds');
+    }
     res.render('campgrounds/show', { campground })
 }));
 
