@@ -71,6 +71,7 @@ router.put('/:id', validateCampground, catchAsyncError(async (req, res, next) =>
     // (req.body.campground) and  will fill new information (using the spread operator {...})
     // for that specific id 
     const campground = await Campground.findByIdAndUpdate(id, {...req.body.campground });
+    req.flash('success', 'Successfully updated campground!');
     // redirect to the show page of the campground we just updated
     res.redirect(`/campgrounds/${campground._id}`)
 }));
