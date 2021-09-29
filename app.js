@@ -6,6 +6,9 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const ExpressError = require('./utils/ExpressError');
 const methodOverride = require('method-override');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const User = require('./models/user');
 
 const campgrounds = require('./routes/campgrounds');
 const reviews = require('./routes/reviews');
@@ -52,6 +55,15 @@ const sessionConfig = {
 }
 app.use(session(sessionConfig));
 app.use(flash());
+
+app.use(passport.initialize());
+app.use(passport.session());
+// we are telling passport to use the local strategy (that we have downloaded and required)
+passport.use(new LocalStrategy(User.authenticate()));
+// this is telling passport how to serialize a User (how to store a User in a session)
+passport.serializeUser(User.serializeUser());
+// this will de-serialize a User, it will un-store a User in a session
+passport.deserializeUser(User.deserializeUser());
 
 // middleware for flash to display success message
 // ** it is important that we put this before our route handlers **
