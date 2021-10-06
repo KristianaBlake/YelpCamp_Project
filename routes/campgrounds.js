@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { campgroundSchema } = require('../schemas.js');
 const catchAsyncError = require('../utils/catchAsync');
+const { campgroundSchema } = require('../schemas.js');
+const { isLoggedIn } = require('../middleware');
+
 const ExpressError = require('../utils/ExpressError');
 const Campground = require('../models/campground');
 
@@ -29,12 +31,12 @@ router.get('/', catchAsyncError(async (req, res) => {
 }));
 
 // create page 
-router.get('/new', (req, res) => {
+router.get('/new', isLoggedIn, (req, res) => {
     res.render('campgrounds/new')
 })
 
 // creating campground
-router.post('/', validateCampground, catchAsyncError (async (req, res, next) => { 
+router.post('/', isLoggedIn, validateCampground, catchAsyncError (async (req, res, next) => { 
     // this is basic rudimentary logic: 
         // if NOT req.body.campground (if it doesn't exist), we'll just throw a new express error
         // We "throw" the express error because we are inside the async function and the catchAsync
@@ -65,13 +67,13 @@ router.get('/:id', catchAsyncError(async(req, res, next) => {
 }));
 
 // edit page 
-router.get('/:id/edit', catchAsyncError(async (req, res, next) => {
+router.get('/:id/edit', isLoggedIn, catchAsyncError(async (req, res, next) => {
     const campground = await Campground.findById(req.params.id);
     res.render('campgrounds/edit', { campground })
 }));
 
 // updating a campground
-router.put('/:id', validateCampground, catchAsyncError(async (req, res, next) => {
+router.put('/:id', isLoggedIn, validateCampground, catchAsyncError(async (req, res, next) => {
     const { id } = req.params;
     // the method findByIdAndUpdate is taking the id as a parameter
     // and everything that is in the body of the request object for the model campround 
@@ -83,7 +85,7 @@ router.put('/:id', validateCampground, catchAsyncError(async (req, res, next) =>
     res.redirect(`/campgrounds/${campground._id}`)
 }));
 
-router.delete('/:id', catchAsyncError(async (req, res, next) => {
+router.delete('/:id', isLoggedIn, catchAsyncError(async (req, res, next) => {
     const { id } = req.params; 
     await Campground.findByIdAndDelete(id); 
     res.redirect('/campgrounds');
