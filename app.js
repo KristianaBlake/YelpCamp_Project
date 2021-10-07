@@ -69,6 +69,9 @@ passport.deserializeUser(User.deserializeUser());
 // middleware for flash to display success message
 // ** it is important that we put this before our route handlers **
 app.use((req, res, next) => {
+    // they are res.locals because I have access to this on 
+    // every single template 
+    res.locals.currentUser = req.user; 
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
     next();
