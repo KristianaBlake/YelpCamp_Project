@@ -5,25 +5,14 @@ const express = require('express');
 // But we can specify an option {mergeParams: true }. 
 // Now all the params are going to be merged. 
 const router = express.Router({ mergeParams: true});
-
+const { validateReview } = require('..middleware');
 const Campground = require('../models/campground');
 const Review = require('../models/review');
 
-const { reviewSchema } = require('../schemas.js');
+
 
 const ExpressError = require('../utils/ExpressError');
 const catchAsyncError = require('../utils/catchAsync');
-
-const validateReview = (req, res, next) => {
-    // check for an error from the object we get back from the reviewSchema
-    const { error } = reviewSchema.validate(req.body);
-    if(error){
-        const msg = error.details.map(el => el.message).join(',')
-        throw new ExpressError(msg, 400)
-    } else {
-        next();
-    }
-};
 
 // post route to create review for specific campground 
 router.post('/', validateReview, catchAsyncError(async(req, res) => {

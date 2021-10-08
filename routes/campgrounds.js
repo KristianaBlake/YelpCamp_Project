@@ -1,29 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const catchAsyncError = require('../utils/catchAsync');
-const { campgroundSchema } = require('../schemas.js');
-const { isLoggedIn } = require('../middleware');
+const { isLoggedIn, validateCampground, isAuthor } = require('../middleware');
 
-const ExpressError = require('../utils/ExpressError');
 const Campground = require('../models/campground');
-
-const validateCampground = (req, res, next) => {
-    // once we have the schema defined, all we do is pass our data through to our schema 
-    // we are destructuring to get the error 
-    const { error } = campgroundSchema.validate(req.body);
-    // this check to see if there is an error
-    if(error){
-        const msg = error.details.map(el => el.message).join(',')
-        // if there is an error it will be caught and thrown to our custom 
-        // error handler further down the page (app.use())
-        
-        // we will also throw the error with the message variable we created above 
-        throw new ExpressError(msg, 400)
-    } else {
-        next();
-    }
-}
-
 
 router.get('/', catchAsyncError(async (req, res) => {
     const campgrounds = await Campground.find({});
@@ -74,42 +54,30 @@ router.get('/:id', catchAsyncError(async(req, res, next) => {
 }));
 
 // edit page 
-router.get('/:id/edit', isLoggedIn, catchAsyncError(async (req, res, next) => {
+router.get('/:id/edit', isLoggedIn, isAuthor, catchAsyncError(async (req, res, next) => {
     const {id} = req.params;
     const campground = await Campground.findById(id);
     if (!campground) {
         req.flash('error', 'Cannot find that campground!');
         return res.redirect('/campgrounds');
     }
-    if(!campground.author.equals(req.user._id)){
-        req.flash('error', 'You do not have permission to do that');
-        return res.redirect(`/campgrounds/${id}`);
-    }
     res.render('campgrounds/edit', { campground })
 }));
 
 // updating a campground
-router.put('/:id', isLoggedIn, validateCampground, catchAsyncError(async (req, res, next) => {
+router.put('/:id', isLoggedIn, isAuthor, validateCampground, catchAsyncError(async (req, res, next) => {
     const { id } = req.params;
-    const campground = await Campground.findById(id);
-    
-    // checking the right authorization 
-    if(!campground.author.equals(req.user._id)){
-        req.flash('error', 'You do not have permission to do that');
-        return res.redirect(`/campgrounds/${id}`);
-    }
-
     // the method findByIdAndUpdate is taking the id as a parameter
     // and everything that is in the body of the request object for the model campround 
     // (req.body.campground) and  will fill new information (using the spread operator {...})
     // for that specific id 
-    const camp = await Campground.findByIdAndUpdate(id, {...req.body.campground });
+    const campground = await Campground.findByIdAndUpdate(id, {...req.body.campground });
     req.flash('success', 'Successfully updated campground!');
     // redirect to the show page of the campground we just updated
     res.redirect(`/campgrounds/${campground._id}`)
 }));
 
-router.delete('/:id', isLoggedIn, catchAsyncError(async (req, res, next) => {
+router.delete('/:id', isLoggedIn, isAuthor, catchAsyncError(async (req, res, next) => {
     const { id } = req.params; 
     await Campground.findByIdAndDelete(id); 
     res.redirect('/campgrounds');
