@@ -48,6 +48,7 @@ router.post('/', isLoggedIn, validateCampground, catchAsyncError (async (req, re
     // this is going to validate our (req.body) data before we attempt to save it with mongoose (before we involve mongoose)
 
     const campground = new Campground(req.body.campground);
+    campground.author = req.user._id;
     await campground.save();
     req.flash('success', 'Successfully made a new campground!');
     res.redirect(`/campgrounds/${campground._id}`);
@@ -55,7 +56,13 @@ router.post('/', isLoggedIn, validateCampground, catchAsyncError (async (req, re
 
 // show page 
 router.get('/:id', catchAsyncError(async(req, res, next) => {
-    const campground = await Campground.findById(req.params.id).populate('reviews');
+    const campground = await Campground.findById(req.params.id).populate({
+        path: 'reviews',
+        populate: {
+            path: 'author'
+        }
+    }).populate('author');
+    console.log(campground);
     // if you didn't find a campground, or mongoose didn't find a campground with that id, 
     // thenn flash error
     // and redirect to the campgrounds homepage 
