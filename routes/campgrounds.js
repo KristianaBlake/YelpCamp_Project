@@ -75,18 +75,35 @@ router.get('/:id', catchAsyncError(async(req, res, next) => {
 
 // edit page 
 router.get('/:id/edit', isLoggedIn, catchAsyncError(async (req, res, next) => {
-    const campground = await Campground.findById(req.params.id);
+    const {id} = req.params;
+    const campground = await Campground.findById(id);
+    if (!campground) {
+        req.flash('error', 'Cannot find that campground!');
+        return res.redirect('/campgrounds');
+    }
+    if(!campground.author.equals(req.user._id)){
+        req.flash('error', 'You do not have permission to do that');
+        return res.redirect(`/campgrounds/${id}`);
+    }
     res.render('campgrounds/edit', { campground })
 }));
 
 // updating a campground
 router.put('/:id', isLoggedIn, validateCampground, catchAsyncError(async (req, res, next) => {
     const { id } = req.params;
+    const campground = await Campground.findById(id);
+    
+    // checking the right authorization 
+    if(!campground.author.equals(req.user._id)){
+        req.flash('error', 'You do not have permission to do that');
+        return res.redirect(`/campgrounds/${id}`);
+    }
+
     // the method findByIdAndUpdate is taking the id as a parameter
     // and everything that is in the body of the request object for the model campround 
     // (req.body.campground) and  will fill new information (using the spread operator {...})
     // for that specific id 
-    const campground = await Campground.findByIdAndUpdate(id, {...req.body.campground });
+    const camp = await Campground.findByIdAndUpdate(id, {...req.body.campground });
     req.flash('success', 'Successfully updated campground!');
     // redirect to the show page of the campground we just updated
     res.redirect(`/campgrounds/${campground._id}`)
