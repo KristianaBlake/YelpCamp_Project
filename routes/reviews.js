@@ -5,7 +5,7 @@ const express = require('express');
 // But we can specify an option {mergeParams: true }. 
 // Now all the params are going to be merged. 
 const router = express.Router({ mergeParams: true});
-const { validateReview, isLoggedIn } = require('..middleware');
+const { validateReview, isLoggedIn, isReviewAuthor } = require('../middleware');
 const Campground = require('../models/campground');
 const Review = require('../models/review');
 
@@ -27,7 +27,7 @@ router.post('/', isLoggedIn, validateReview, catchAsyncError(async(req, res) => 
 }))
 
 // deleting a campground with associated reviews 
-router.delete('/:reviewId', catchAsyncError(async (req, res) => {
+router.delete('/:reviewId', isLoggedIn, isReviewAuthor, catchAsyncError(async (req, res) => {
     // using mongo operator called "pull" to grab that *one* campground object id 
     // from an array of object ids 
     const { id, reviewId } = req.params;

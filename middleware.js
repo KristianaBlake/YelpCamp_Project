@@ -1,6 +1,7 @@
 const { campgroundSchema, reviewSchema } = require('./schemas.js');
 const ExpressError = require('./utils/ExpressError');
 const Campground = require('./models/campground');
+const Review = require('./models/review');
 
 module.exports.isLoggedIn = (req, res, next) => {
     // .isAuthenticated() is a helper method from passport that uses the session that is automatically added to the reqest object 
@@ -34,6 +35,18 @@ module.exports.isAuthor = async (req, res, next) => {
     const campground = await Campground.findById(id);
     // checking the right authorization 
     if(!campground.author.equals(req.user._id)){
+        req.flash('error', 'You do not have permission to do that');
+        return res.redirect(`/campgrounds/${id}`);
+    } 
+    next();
+}
+
+module.exports.isReviewAuthor = async (req, res, next) => {
+    // the "id" is the campground id
+    const { id, reviewId } = req.params; 
+    const review = await Review.findById(reviewId);
+    // checking the right authorization 
+    if(!review.author.equals(req.user._id)){
         req.flash('error', 'You do not have permission to do that');
         return res.redirect(`/campgrounds/${id}`);
     } 

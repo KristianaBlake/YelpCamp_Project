@@ -4,6 +4,6 @@ module.exports = func => {
     return (req, res, next) => {
         func(req, res, next).catch(next);
     }
-}
+};
 
 // we can now use this to wrap our asyncronous functions
