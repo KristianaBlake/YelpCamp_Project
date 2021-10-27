@@ -8,23 +8,12 @@ const router = express.Router({ mergeParams: true});
 const { validateReview, isLoggedIn, isReviewAuthor } = require('../middleware');
 const Campground = require('../models/campground');
 const Review = require('../models/review');
-
-
-
+const reviews = require('../controllers/reviews');
 const ExpressError = require('../utils/ExpressError');
 const catchAsyncError = require('../utils/catchAsync');
 
 // post route to create review for specific campground 
-router.post('/', isLoggedIn, validateReview, catchAsyncError(async(req, res) => {
-    const campground = await Campground.findById(req.params.id);
-    const review = new Review(req.body.review);
-    review.author = req.user._id;
-    campground.reviews.push(review);
-    await review.save();
-    await campground.save();
-    req.flash('success', 'Created new review!');
-    res.redirect(`/campgrounds/${campground._id}`);
-}))
+router.post('/', isLoggedIn, validateReview, catchAsyncError(reviews.createReview))
 
 // deleting a campground with associated reviews 
 router.delete('/:reviewId', isLoggedIn, isReviewAuthor, catchAsyncError(async (req, res) => {

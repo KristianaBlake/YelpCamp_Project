@@ -71,15 +71,15 @@ passport.deserializeUser(User.deserializeUser());
 // app.use() is express' way of saying : anything inside of our parenthesis are going 
 // to be used every time a request is made 
 app.use((req, res, next) => {
-    // they are res.locals because I have access to this on 
-    // every single template 
+    // console.log(req.session)
 
     // if you aren't going from any of these two routes: (login and the homepage), then
-    if (!['/login', '/'].includes(req.originalUrl)) {
+    if (!['/login', '/register', '/'].includes(req.originalUrl)) {
         // store where the user was on the session because it is a way to store
         // where you previously where from one request to another request
         req.session.returnTo = req.originalUrl;
     }
+    // res.locals because I have access to this on every single template 
     res.locals.currentUser = req.user; 
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');

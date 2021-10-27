@@ -1,7 +1,10 @@
 const Campground = require('../models/campground');
  
  module.exports.index = async (req, res) => {
-    const campgrounds = await Campground.find({});
+    const campgrounds = await Campground.find({}).populate({
+        path: 'popupText',
+        strictPopulate: false,
+    });
     res.render('campgrounds/index', { campgrounds });
 }
 
@@ -33,7 +36,6 @@ module.exports.showCampground = async(req, res) => {
         strictPopulate: false
     })
     await campground.populate({path: 'reviews', populate: 'author'})
-    console.log(campground);
     // if you didn't find a campground, or mongoose didn't find a campground with that id, 
     // thenn flash error
     // and redirect to the campgrounds homepage 

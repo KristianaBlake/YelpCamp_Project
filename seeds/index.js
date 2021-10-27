@@ -3,7 +3,7 @@
 // this file is going to connect to mongoose and use the Campground model file
 const mongoose = require('mongoose');
 const cities = require('./cities');
-const {places, descriptors} = require('./seedHelpers');
+const { places, descriptors } = require('./seedHelpers');
 const Campground = require('../models/campground');
 
 // this is logic here saying use our local development database OR if this is in production 
