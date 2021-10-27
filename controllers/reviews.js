@@ -11,3 +11,14 @@ module.exports.createReview = async(req, res) => {
     req.flash('success', 'Created new review!');
     res.redirect(`/campgrounds/${campground._id}`);
 }
+
+module.exports.deleteReview = async (req, res) => {
+    // using mongo operator called "pull" to grab that *one* campground object id 
+    // from an array of object ids 
+    const { id, reviewId } = req.params;
+    // the $pull mongo operator will pull out any matching reviewIds from the array of reviews ids 
+    await Campground.findByIdAndUpdate(id, {$pull: { reviews: reviewId } });
+    await Review.findByIdAndDelete(reviewId);
+    req.flash('success', 'Sucessfully deleted review!');
+    res.redirect(`/campgrounds/${id}`);
+}

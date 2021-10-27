@@ -16,15 +16,6 @@ const catchAsyncError = require('../utils/catchAsync');
 router.post('/', isLoggedIn, validateReview, catchAsyncError(reviews.createReview))
 
 // deleting a campground with associated reviews 
-router.delete('/:reviewId', isLoggedIn, isReviewAuthor, catchAsyncError(async (req, res) => {
-    // using mongo operator called "pull" to grab that *one* campground object id 
-    // from an array of object ids 
-    const { id, reviewId } = req.params;
-    // the $pull mongo operator will pull out any matching reviewIds from the array of reviews ids 
-    await Campground.findByIdAndUpdate(id, {$pull: { reviews: reviewId } });
-    await Review.findByIdAndDelete(reviewId);
-    req.flash('success', 'Sucessfully deleted review!');
-    res.redirect(`/campgrounds/${id}`);
-}));
+router.delete('/:reviewId', isLoggedIn, isReviewAuthor, catchAsyncError(reviews.deleteReview));
 
 module.exports = router; 
