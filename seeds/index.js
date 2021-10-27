@@ -12,10 +12,10 @@ const Campground = require('../models/campground');
 // yelp-camp is the name of the database 
 
 // then we pass in our options so our database won't yell at us 
-mongoose.connect('mongodb://localhost:27017/yelp-camp', {
-    useNewUrlParser: true, 
-    useCreateIndex: true, 
-    useUnifiedTopology: true
+mongoose.connect('mongodb://localhost:27017/yelp-camp-v2', {
+    // useNewUrlParser: true, 
+    // useCreateIndex: true, 
+    // useUnifiedTopology: true
 });
 
 const db = mongoose.connection;
@@ -38,8 +38,8 @@ const seedDB = async () => {
         const random1000 = Math.floor(Math.random() * 1000);
         const price = Math.floor(Math.random() * 20) + 10;
         const camp = new Campground({
-            // user_id of username "green"
-            author: '615f410ff1ce26df9691bd3a',
+            // user_id of username "pink"
+            author: '6178caba5c9cfc50384adcdb',
             location: `${cities[random1000].city}, ${cities[random1000].state}`,
             title: `${sample(descriptors)} ${sample(places)}`,
             image: 'https://source.unsplash.com/collection/483251',

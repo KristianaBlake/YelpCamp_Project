@@ -20,7 +20,7 @@ const reviewRoutes = require('./routes/reviews');
 // yelp-camp is the name of the database 
 
 // then we pass in our options so our database won't yell at us 
-mongoose.connect('mongodb://localhost:27017/yelp-camp', {
+mongoose.connect('mongodb://localhost:27017/yelp-camp-v2', {
 });
 
 const db = mongoose.connection;
