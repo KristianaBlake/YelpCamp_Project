@@ -7,7 +7,7 @@ const { isLoggedIn, validateCampground, isAuthor} = require('../middleware');
 const Campground = require('../models/campground')
 
 router.route('/')
-    .get(catchAsync(campgrounds.index))
+    .get(catchAsyncError(campgrounds.index))
     .post(isLoggedIn, validateCampground, catchAsyncError(campgrounds.createCampground))
 
 // create page 
