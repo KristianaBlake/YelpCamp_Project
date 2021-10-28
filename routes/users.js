@@ -1,25 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-const User = require('../models/user');
-const { reviewSchema } = require('../schemas');
 const catchAsyncError = require('../utils/catchAsync');
+const User = require('../models/user');
 const users = require('../controllers/users');
 
-router.get('/register', users.renderRegister);
+router.route('/register')
+    .get(users.renderRegister)
+    .post(catchAsyncError(users.register));
 
-router.post('/register', catchAsyncError(users.register));
+router.route('/login')
+    .get(users.renderLogin)
+    .post(passport.authenticate('local', { failureFlash: true, failureRedirect: '/login' }), users.login)
 
-// serves login form
-router.get('/login', users.renderLogin);
+router.get('/logout', users.logout)
 
-// the actual logging in and checking to make sure credentials are valid
-
-// the "local" in possport authenticate, means the local browser
-// faiureFlash: gonna flash a message for us automatically
-// failureRedirect: if things go wrong, redirect to the login page again
-router.post('/login', passport.authenticate('local', { failureFlash: true, failureRedirect: '/login'}), users.login);
-
-router.get('/logout', users.logout);
-
-module.exports = router; 
+module.exports = router;
