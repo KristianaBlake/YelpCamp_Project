@@ -12,7 +12,7 @@ module.exports.renderNewForm = (req, res) => {
     res.render('campgrounds/new')
 }
 
-module.exports.createCamground = async (req, res, next) => { 
+module.exports.createCampground = async (req, res, next) => { 
     // this is basic rudimentary logic: 
         // if NOT req.body.campground (if it doesn't exist), we'll just throw a new express error
         // We "throw" the express error because we are inside the async function and the catchAsync
