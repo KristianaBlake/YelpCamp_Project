@@ -27,6 +27,7 @@ module.exports.createCampground = async (req, res, next) => {
     // files is going to include an array of photos 
     // we loop over the path and file name and add it to the newly created campground
     campground.images = req.files.map(f => ({url: f.path, filename: f.filename}))
+    console.log(campground.images)
     campground.author = req.user._id;
     await campground.save();
     req.flash('success', 'Successfully made a new campground!');
