@@ -24,6 +24,9 @@ module.exports.createCampground = async (req, res, next) => {
     // this is going to validate our (req.body) data before we attempt to save it with mongoose (before we involve mongoose)
 
     const campground = new Campground(req.body.campground);
+    // files is going to include an array of photos 
+    // we loop over the path and file name and add it to the newly created campground
+    campground.images = req.files.map(f => ({url: f.path, filename: f.filename}))
     campground.author = req.user._id;
     await campground.save();
     req.flash('success', 'Successfully made a new campground!');
