@@ -67,6 +67,9 @@ module.exports.updateCampground = async (req, res, next) => {
     // (req.body.campground) and  will fill new information (using the spread operator {...})
     // for that specific id 
     const campground = await Campground.findByIdAndUpdate(id, {...req.body.campground });
+    const imgs = campground.images.push(req.files.map(f => ({url: f.path, filename: f.filename})));
+    campground.images.push(...imgs);
+    await campground.save();
     req.flash('success', 'Successfully updated campground!');
     // redirect to the show page of the campground we just updated
     res.redirect(`/campgrounds/${campground._id}`)
