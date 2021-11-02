@@ -1,4 +1,5 @@
 const Campground = require('../models/campground');
+const { cloudinary } = require("../cloudinary");
  
  module.exports.index = async (req, res) => {
     const campgrounds = await Campground.find({}).populate({
@@ -62,14 +63,22 @@ module.exports.renderEditForm = async (req, res, next) => {
 
 module.exports.updateCampground = async (req, res, next) => {
     const { id } = req.params;
+    console.log(req.body);
     // the method findByIdAndUpdate is taking the id as a parameter
     // and everything that is in the body of the request object for the model campround 
     // (req.body.campground) and  will fill new information (using the spread operator {...})
     // for that specific id 
     const campground = await Campground.findByIdAndUpdate(id, {...req.body.campground });
-    const imgs = campground.images.push(req.files.map(f => ({url: f.path, filename: f.filename})));
+    const imgs = req.files.map(f => ({ url: f.path, filename: f.filename }));
     campground.images.push(...imgs);
     await campground.save();
+    if(req.body.deleteImages){
+        for(let filename of req.body.deleteImages){
+            await cloudinary.uploader.destroy(filename);
+        }
+        await campground.updateOne({$pull: {images: {filename: {$in: req.body.deleteImages}}}})
+    }
+    
     req.flash('success', 'Successfully updated campground!');
     // redirect to the show page of the campground we just updated
     res.redirect(`/campgrounds/${campground._id}`)
