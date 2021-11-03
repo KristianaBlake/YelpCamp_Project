@@ -1,6 +1,7 @@
 
 #formFile{
     display: flex;
+    gap: 10px;
  }
     #formFile img{
     height: 100px;
