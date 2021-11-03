@@ -1,4 +1,6 @@
 <% layout('layouts/boilerplate')%>
+
+<link rel="stylesheet" href="/stylesheets/images.css" class="rel">
 <div class="row">
     <h1 class="text-center">Edit Campground</h1>
     <div class="col-md-6 offset-md-3">
@@ -42,8 +44,12 @@
                 </div>
             </div>
             <div class="mb-3">
-                <label for="formFileMultiple" class="form-label">Upload photos below</label>
-                <input class="form-control" type="file" id="formFileMultiple" name="image" multiple required>
+                <label class="form-label">Choose Image(s)</label>
+                <div class="form-file custom-file">
+                    <input class="form-control custom-file-input" type="file" id="image" name="image" multiple onchange="previewMultiple(event)">
+                    <label for="image" class="form-label custom-file-label"></label>
+                </div>
+                <div id="formFile"></div>
             </div>
             <div class="mb-3">
                 <button class="btn btn-info">Update Campground</button>
