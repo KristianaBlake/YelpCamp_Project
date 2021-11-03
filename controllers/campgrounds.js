@@ -1,4 +1,7 @@
 const Campground = require('../models/campground');
+const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
+const mapBoxToken = process.env.MAPBOX_TOKEN;
+const geocoder = mbxGeocoding({ accessToken: mapBoxToken });
 const { cloudinary } = require("../cloudinary");
  
  module.exports.index = async (req, res) => {
@@ -24,6 +27,11 @@ module.exports.createCampground = async (req, res, next) => {
     // this is not a mongoose schema
     // this is going to validate our (req.body) data before we attempt to save it with mongoose (before we involve mongoose)
 
+    const geoData = await geocoder.forwardGeocode({
+        query: req.body.campground.location,
+        limit: 1
+    }).send()
+    console.log(geoData);
     const campground = new Campground(req.body.campground);
     // files is going to include an array of photos 
     // we loop over the path and file name and add it to the newly created campground
