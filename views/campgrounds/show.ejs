@@ -1,10 +1,11 @@
 <% layout('layouts/boilerplate')%>
 <link rel="stylesheet" href="/stylesheets/stars.css">
 
-
-
 <div class="row">
     <div class="col-6">
+
+        <div id='map' style='width: 400px; height: 300px;'></div>
+
         <div id="campgroundCarousel" class="carousel slide" data-ride="carousel">
             <div class="carousel-inner">
                 <% campground.images.forEach((img, i) => {  %>
@@ -101,4 +102,14 @@
         <% } %>
     </div>
 </div>
+
+<script>
+    mapboxgl.accessToken = '<%-process.env.MAPBOX_TOKEN%>';
+    const map = new mapboxgl.Map({
+        container: 'map', // container ID
+        style: 'mapbox://styles/mapbox/streets-v11', // style URL
+        center: [-74.5, 40], // starting position [lng, lat]
+        zoom: 9 // starting zoom
+    });
+</script>
 
