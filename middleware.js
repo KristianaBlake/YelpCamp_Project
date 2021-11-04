@@ -20,6 +20,7 @@ module.exports.validateCampground = (req, res, next) => {
     // we are destructuring to get the error 
     const { error } = campgroundSchema.validate(req.body);
     // this check to see if there is an error
+    console.log(req.body);
     if(error){
         const msg = error.details.map(el => el.message).join(',')
         // if there is an error it will be caught and thrown to our custom 

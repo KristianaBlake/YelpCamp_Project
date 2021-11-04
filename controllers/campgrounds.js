@@ -16,31 +16,19 @@ module.exports.renderNewForm = (req, res) => {
     res.render('campgrounds/new')
 }
 
-module.exports.createCampground = async (req, res, next) => { 
-    // this is basic rudimentary logic: 
-        // if NOT req.body.campground (if it doesn't exist), we'll just throw a new express error
-        // We "throw" the express error because we are inside the async function and the catchAsync
-        // is going to catch that error and hand it off to "next" which takes the error down to the 
-        // app.use() function near the bottom of the page (where the custom error handling is)
-     // ->  // if(!req.body.campgound) throw new ExpressError('Invalid Campground Data', 400);
-
-    // this is not a mongoose schema
-    // this is going to validate our (req.body) data before we attempt to save it with mongoose (before we involve mongoose)
-
+module.exports.createCampground = async (req, res, next) => {
     const geoData = await geocoder.forwardGeocode({
         query: req.body.campground.location,
         limit: 1
     }).send()
-    console.log(geoData);
     const campground = new Campground(req.body.campground);
-    // files is going to include an array of photos 
-    // we loop over the path and file name and add it to the newly created campground
-    campground.images = req.files.map(f => ({url: f.path, filename: f.filename}))
-    console.log(campground.images)
+    campground.geometry = geoData.body.features[0].geometry;
+    campground.images = req.files.map(f => ({ url: f.path, filename: f.filename }));
     campground.author = req.user._id;
     await campground.save();
+    console.log(campground);
     req.flash('success', 'Successfully made a new campground!');
-    res.redirect(`/campgrounds/${campground._id}`);
+    res.redirect(`/campgrounds/${campground._id}`)
 }
 
 module.exports.showCampground = async(req, res) => {
