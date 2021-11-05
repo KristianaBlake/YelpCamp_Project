@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 const Review = require('./review');
 const Schema = mongoose.Schema;
 
+
+// By default, Mongoose does not include virtuals when you convert 
+// a document to JSON. To include virtuals, you need the code below
+const opts = { toJSON: { virtuals: true } }
+
 // making our Schema 
 const CampgroundSchema = new Schema({
     title: String,
@@ -36,6 +41,12 @@ const CampgroundSchema = new Schema({
             ref: 'Review'
         }
     ]
+}, opts);
+
+CampgroundSchema.virtual('properties.popUpMarkup').get(function () {
+    return `
+    <strong><a href="/campgrounds/${this._id}">${this.title}</a><strong>
+    <p>${this.description.substring(0, 20)}...</p>`
 });
 
 CampgroundSchema.post('findOneAndDelete', async function(doc){
