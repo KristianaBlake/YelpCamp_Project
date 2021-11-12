@@ -20,14 +20,16 @@ const mongoSanitize = require('express-mongo-sanitize');
 const userRoutes = require('./routes/users');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
+const dbUrl = process.env.DB_URL; 
 
 // this is logic here saying use our local development database OR if this is in production 
     // use the production database
 
 // yelp-camp is the name of the database 
+// local database: 'mongodb://localhost:27017/yelp-camp-v2'
 
 // then we pass in our options so our database won't yell at us 
-mongoose.connect('mongodb://localhost:27017/yelp-camp-v2', {
+mongoose.connect(dbUrl, {
 });
 
 const db = mongoose.connection;
