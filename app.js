@@ -20,17 +20,12 @@ const mongoSanitize = require('express-mongo-sanitize');
 const userRoutes = require('./routes/users');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
-// const dbUrl = process.env.DB_URL; 
 
-// this is logic here saying use our local development database OR if this is in production 
-    // use the production database
+// connecting to MongoStore
+const MongoStore = require('connect-mongo');
 
-// yelp-camp is the name of the database 
-// local database: 'mongodb://localhost:27017/yelp-camp-v2'
-
-// then we pass in our options so our database won't yell at us 
-mongoose.connect('mongodb://localhost:27017/yelp-camp-v2', {
-});
+const dbUrl = 'mongodb://localhost:27017/yelp-camp-v2'; 
+mongoose.connect(dbUrl, {});
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
@@ -56,7 +51,20 @@ app.use(mongoSanitize({
     replaceWith: '_'
 }))
 
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    touchAfter: 24 * 60 * 60,
+    crypto: {
+        secret: 'squirrel'
+    }
+});
+
+store.on("error", function (e) {
+    console.log("SESSION STORE ERROR", e)
+});
+
 const sessionConfig = {
+    store,
     name: 'session',
     secret: 'thisshouldbeabettersecret!',
     resave: false, 
@@ -65,6 +73,7 @@ const sessionConfig = {
         // our cookies set through the session are only accessible
         // through HTTP
         httpOnly: true, 
+        // breaks it down into miliseconds 
         expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
         maxAge: 1000 * 60 * 60 * 24 * 7,
     }
